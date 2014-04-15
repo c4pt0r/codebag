@@ -39,6 +39,7 @@ func main() {
         os.Exit(2)
     }
 
+    InitDb()
     for _, cmd := range commands {
         if cmd.Name() == args[0] && cmd.Run != nil {
             cmd.Run(cmd, args[1:])
