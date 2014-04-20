@@ -11,7 +11,7 @@ func init() {
 }
 
 func Test_AddSnippet(t *testing.T) {
-    s := NewSnippet("go", "go example", time.Now(), []byte("\xff\x33"))
+    s := NewSnippet("go", "go example", time.Now(), []byte("code code codeh"))
     if _, err := AddSnippet(s); err == nil {
         log.Println(s.id)
     } else {
@@ -23,6 +23,7 @@ func Test_AddSnippet(t *testing.T) {
     if err != nil {
         t.Error(err)
     }
+    log.Println(string(s.content))
 
     id := s.id
     s1, err := FetchSnippet(id)

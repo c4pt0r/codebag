@@ -66,6 +66,7 @@ func AddSnippet(s *Snippet) (int64, error) {
 }
 
 var ErrNoSuchSnippet error = errors.New("no such snippet")
+
 func FetchSnippet(id int64) (*Snippet, error) {
     rows, err := db.Query(fmt.Sprintf("select id, type, desc, date, content from snippet where id=%d", id))
     if err != nil {
@@ -106,9 +107,14 @@ func UpdateSnippet(id int64, s *Snippet) error {
 }
 
 func ListSnippets(offset, count int64) ([]*Snippet, error) {
-    sql := fmt.Sprintf("select id, type, desc, date  from snippet order by id desc limit %d offset %d",
-                    count,
-                    offset)
+    var sql string
+    if count == 0 {
+        sql = fmt.Sprintf("select id, type, desc, date  from snippet where id > %d order by id desc ", offset)
+    } else {
+        sql = fmt.Sprintf("select id, type, desc, date  from snippet order by id desc where id > %d limit %d",
+                    offset,
+                    count)
+    }
     rows, err := db.Query(sql)
     if err != nil {
         return nil, err

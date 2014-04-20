@@ -5,6 +5,8 @@ import (
     "os"
     "fmt"
     "strings"
+    "log"
+    "io/ioutil"
 )
 
 type Command struct {
@@ -30,6 +32,13 @@ func (c *Command) Usage() {
 
 var commands = []*Command{
     cmdAdd,
+    cmdGet,
+    cmdList,
+    cmdRm,
+}
+
+func init() {
+    log.SetOutput(ioutil.Discard)
 }
 
 func main() {

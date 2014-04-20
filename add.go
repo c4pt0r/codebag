@@ -2,6 +2,8 @@ package main
 import (
     "log"
     "os"
+    "time"
+    "fmt"
     "os/exec"
     "io/ioutil"
 )
@@ -22,11 +24,11 @@ func init() {
 }
 
 func addRun(cmd *Command, args []string) {
-    cmd.Flag.Parse(args)
-    log.Println("message:", message)
-    log.Println("snippet_id:", editId)
+    cmdAdd.Flag.Parse(args)
     log.Println("args", cmd.Flag.Args())
-    addSnippet(nil, "", "")
+    if len(message) > 0 {
+        addSnippet(nil, message, ftype)
+    }
 }
 
 func readFromEditor() (string, error) {
@@ -48,12 +50,19 @@ func readFromEditor() (string, error) {
     return string(b), err
 }
 
-func addSnippet(files []string, desc string, ftype string) {
+func addSnippet(files []string, desc string, ftype string) *Snippet {
     if files == nil || len(files) == 0 {
         content, err := readFromEditor()
         if err == nil {
-            log.Println(content)
+            s := NewSnippet(ftype, desc, time.Now(), []byte(content))
+            if id, err := AddSnippet(s); err == nil {
+                fmt.Println(id)
+            } else {
+                log.Fatal(err)
+            }
+            return s
         }
     }
+    return nil
 }
 
