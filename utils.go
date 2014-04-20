@@ -3,6 +3,8 @@ package main
 import (
     "crypto/rand"
     "os/user"
+    "os"
+    "fmt"
 )
 
 var SimpleTimeFmt = "2006-01-02 15:04:05"
@@ -25,3 +27,7 @@ func GetHomeDir() string {
     return usr.HomeDir
 }
 
+func Fatal(err error) {
+    fmt.Fprintf(os.Stderr, "%s\n", err.Error())
+    os.Exit(-2)
+}

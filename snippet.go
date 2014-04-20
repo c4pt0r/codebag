@@ -11,16 +11,16 @@ import (
 
 type Snippet struct {
     id      int64 // id maybe -1, when dirty
-    ftype   string
+    tags    string
     desc    string
     date    time.Time
-    content []byte
+    content []byte // json format content, [{"filename": xxx, "source":xxxxxxxxxxx}]
 }
 
-func NewSnippet(ftype, desc string, date time.Time, content []byte) *Snippet {
+func NewSnippet(tags, desc string, date time.Time, content []byte) *Snippet {
     ret := &Snippet{
         -1,
-        ftype,
+        tags,
         desc,
         date,
         content,
@@ -29,12 +29,11 @@ func NewSnippet(ftype, desc string, date time.Time, content []byte) *Snippet {
 }
 
 var createSnippetTblSql = `
-create table snippet (id integer primary key, type text, desc text, date text, content blob)
+create table snippet (id integer primary key, tags text, desc text, date text, content blob)
 `
 var db *sql.DB
 
 func InitDb() {
-    log.Println("init db...")
     var err error
     dbFile := GlobalCfg.DbFile
     db, err = sql.Open("sqlite3", dbFile)
@@ -50,12 +49,12 @@ func AddSnippet(s *Snippet) (int64, error) {
 	if err != nil {
         return -1, err
 	}
-	stmt, err := tx.Prepare("insert into snippet(type, desc, date, content) values(?, ?, ?, ?)")
+	stmt, err := tx.Prepare("insert into snippet(tags, desc, date, content) values(?, ?, ?, ?)")
 	if err != nil {
         return -1, err
 	}
 	defer stmt.Close()
-    res, err := stmt.Exec(s.ftype, s.desc, s.date.Format(time.RFC3339), s.content)
+    res, err := stmt.Exec(s.tags, s.desc, s.date.Format(time.RFC3339), s.content)
     if err != nil {
         return -1, err
     }
@@ -68,7 +67,7 @@ func AddSnippet(s *Snippet) (int64, error) {
 var ErrNoSuchSnippet error = errors.New("no such snippet")
 
 func FetchSnippet(id int64) (*Snippet, error) {
-    rows, err := db.Query(fmt.Sprintf("select id, type, desc, date, content from snippet where id=%d", id))
+    rows, err := db.Query(fmt.Sprintf("select id, tags, desc, date, content from snippet where id=%d", id))
     if err != nil {
         return nil, err
     }
@@ -76,7 +75,7 @@ func FetchSnippet(id int64) (*Snippet, error) {
     for rows.Next() {
         s := &Snippet{}
         var date string
-        rows.Scan(&s.id, &s.ftype, &s.desc, &date, &s.content)
+        rows.Scan(&s.id, &s.tags, &s.desc, &date, &s.content)
         s.date, _ = time.Parse(time.RFC3339, date)
         return s, nil
     }
@@ -93,12 +92,12 @@ func UpdateSnippet(id int64, s *Snippet) error {
 	if err != nil {
         return err
 	}
-	stmt, err := tx.Prepare(fmt.Sprintf("update snippet set type=?, desc=?, date=?, content=? where id=%d", id))
+	stmt, err := tx.Prepare(fmt.Sprintf("update snippet set tags=?, desc=?, date=?, content=? where id=%d", id))
 	if err != nil {
         return err
 	}
 	defer stmt.Close()
-    _, err = stmt.Exec(s.ftype, s.desc, s.date.Format(time.RFC3339), s.content)
+    _, err = stmt.Exec(s.tags, s.desc, s.date.Format(time.RFC3339), s.content)
     if err != nil {
         return err
     }
@@ -109,9 +108,9 @@ func UpdateSnippet(id int64, s *Snippet) error {
 func ListSnippets(offset, count int64) ([]*Snippet, error) {
     var sql string
     if count == 0 {
-        sql = fmt.Sprintf("select id, type, desc, date  from snippet where id > %d order by id desc ", offset)
+        sql = fmt.Sprintf("select id, tags, desc, date  from snippet where id > %d order by id desc ", offset)
     } else {
-        sql = fmt.Sprintf("select id, type, desc, date  from snippet order by id desc where id > %d limit %d",
+        sql = fmt.Sprintf("select id, tags, desc, date  from snippet order by id desc where id > %d limit %d",
                     offset,
                     count)
     }
@@ -124,7 +123,7 @@ func ListSnippets(offset, count int64) ([]*Snippet, error) {
     for rows.Next() {
         s := &Snippet{}
         var date string
-        rows.Scan(&s.id, &s.ftype, &s.desc, &date)
+        rows.Scan(&s.id, &s.tags, &s.desc, &date)
         s.date, _ = time.Parse(time.RFC3339, date)
         ret = append(ret, s)
     }

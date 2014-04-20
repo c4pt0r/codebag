@@ -24,7 +24,7 @@ func LoadConfig() error {
     } else {
         GlobalCfg = &Config {
             Editor : "vim",
-            DbFile : "/tmp/codebag.db",
+            DbFile : GetHomeDir() + "/.codebag.db",
         }
         b, _ := json.MarshalIndent(GlobalCfg, "", "    ")
         ioutil.WriteFile(filename, b, 0644)

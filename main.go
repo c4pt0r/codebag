@@ -24,10 +24,8 @@ func (c *Command) Name() string {
     return name
 }
 
-
 func (c *Command) Usage() {
-    fmt.Fprintf(os.Stderr, "usage %s\n\n", c.UsageLine)
-    os.Exit(2)
+    fmt.Fprintf(os.Stderr, "%s\n", c.UsageLine)
 }
 
 var commands = []*Command{
@@ -42,6 +40,13 @@ func init() {
 }
 
 func main() {
+    flag.Usage = func() {
+        fmt.Fprintf(os.Stderr, "[get|add|ls|rm]\n")
+        for _, cmd := range commands {
+            cmd.Usage()
+        }
+        os.Exit(2)
+    }
     flag.Parse()
     args := flag.Args()
     if len(args) < 1 {

@@ -5,11 +5,12 @@ import (
     "log"
 )
 var cmdRm = &Command{
-    UsageLine : "rm",
+    UsageLine : "rm ids...",
 }
 
 func init() {
     cmdRm.Run = rmRun
+    cmdRm.Flag.Usage = cmdRm.Usage
 }
 
 func rmRun(c *Command, args []string) {
